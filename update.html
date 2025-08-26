@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<title>Update Detail</title>
+<style>
+  body{margin:0;font-family:'Segoe UI',Tahoma,sans-serif;background:#f9fbe7;color:#1b5e20;}
+  .container{max-width:700px;margin:50px auto;background:#fff;border-radius:20px;padding:30px;box-shadow:0 20px 40px rgba(27,94,32,.2);}
+  button{padding:10px 20px;border:none;border-radius:12px;color:#fff;cursor:pointer;}
+  #back-btn{background:#388e3c;}
+  #delete-btn{background:#a52714;position:fixed;top:20px;right:20px;}
+  .media-container{margin-top:20px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;}
+  .media-container img,.media-container video{max-width:100%;max-height:300px;border-radius:12px;box-shadow:0 6px 15px rgba(27,94,32,.3);}
+</style>
+</head>
+<body>
+  <button id="delete-btn">Delete Update</button>
+  <div class="container">
+    <h1 id="update-title">Tajuk Update</h1>
+    <p id="update-content">Isi update...</p>
+    <div id="media-container" class="media-container"></div>
+    <button id="back-btn">Kembali</button>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+  import { getStorage, ref, deleteObject } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
+    authDomain: "latenight-4c61a.firebaseapp.com",
+    projectId: "latenight-4c61a",
+    storageBucket: "latenight-4c61a.firebasestorage.app",
+    messagingSenderId: "208698993180",
+    appId: "1:208698993180:web:7741767d129b4d43034dd9",
+    measurementId: "G-MVKZ0R87Y3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  const id=new URLSearchParams(window.location.search).get("id");
+  let currentUpdate=null;
+
+  async function loadUpdate(){
+    const snap=await getDoc(doc(db,"updates",id));
+    if(snap.exists()){
+      currentUpdate=snap.data();
+      document.getElementById("update-title").textContent=currentUpdate.tajuk;
+      document.getElementById("update-content").textContent=currentUpdate.isi;
+
+      const mediaContainer=document.getElementById("media-container");
+      mediaContainer.innerHTML="";
+      if(currentUpdate.media){
+        currentUpdate.media.forEach(m=>{
+          if(m.type==="image"){
+            const img=document.createElement("img");
+            img.src=m.url;
+            mediaContainer.appendChild(img);
+          }else{
+            const video=document.createElement("video");
+            video.src=m.url;video.controls=true;
+            mediaContainer.appendChild(video);
+          }
+        });
+      }
+    }else{
+      alert("Update tidak ditemui.");
+      window.location.href="index.html";
+    }
+  }
+  loadUpdate();
+
+  document.getElementById("back-btn").onclick=()=>window.location.href="index.html";
+
+  document.getElementById("delete-btn").onclick=async()=>{
+    if(!confirm("Padam update ini?")) return;
+    if(currentUpdate && currentUpdate.media){
+      for(const m of currentUpdate.media){
+        try{
+          // ambil nama file dari URL storage
+          const urlPath=new URL(m.url).pathname;
+          const fullPath=decodeURIComponent(urlPath.split("/o/")[1].split("?")[0]);
+          await deleteObject(ref(storage,fullPath));
+          console.log("Media dipadam:",fullPath);
+        }catch(err){
+          console.error("Gagal padam media:",err);
+        }
+      }
+    }
+    await deleteDoc(doc(db,"updates",id));
+    alert("Update + semua media telah dipadam.");
+    window.location.href="index.html";
+  }
+</script>
+</body>
+</html>
