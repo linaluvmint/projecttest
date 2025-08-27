@@ -1,99 +1,274 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8" />
-<title>Update Detail</title>
-<style>
-  body{margin:0;font-family:'Segoe UI',Tahoma,sans-serif;background:#f9fbe7;color:#1b5e20;}
-  .container{max-width:700px;margin:50px auto;background:#fff;border-radius:20px;padding:30px;box-shadow:0 20px 40px rgba(27,94,32,.2);}
-  button{padding:10px 20px;border:none;border-radius:12px;color:#fff;cursor:pointer;}
-  #back-btn{background:#388e3c;}
-  #delete-btn{background:#a52714;position:fixed;top:20px;right:20px;}
-  .media-container{margin-top:20px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;}
-  .media-container img,.media-container video{max-width:100%;max-height:300px;border-radius:12px;box-shadow:0 6px 15px rgba(27,94,32,.3);}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detail Update</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet" />
+  <style>
+    /* (Sama macam sebelum ni) */
+    @keyframes greenPulse {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    body {
+      margin: 0;
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(-45deg, #d7f5d1, #a3d7a5, #d7f5d1, #a3d7a5);
+      background-size: 400% 400%;
+      animation: greenPulse 20s ease infinite;
+      min-height: 100vh;
+      color: #2e4d2e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background: linear-gradient(145deg, #f0fff0, #d8f5d8);
+      border-radius: 25px;
+      padding: 40px 50px;
+      box-shadow: 0 8px 24px rgba(27, 94, 32, 0.15),
+                  inset 0 0 8px rgba(255, 255, 255, 0.6);
+      border: 1.5px solid #a3d4a5;
+      max-width: 650px;
+      width: 100%;
+      position: relative;
+    }
+    h1 {
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: 700;
+    }
+    p {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin-bottom: 30px;
+    }
+    #back-btn {
+      background: transparent;
+      color: #4caf50;
+      border: 2px solid #4caf50;
+      padding: 10px 30px;
+      border-radius: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      display: block;
+      margin: 0 auto;
+    }
+    #back-btn:hover {
+      background-color: #4caf50;
+      color: white;
+    }
+    .menu-wrapper {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      user-select: none;
+    }
+    .menu-button {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0;
+    }
+    .menu-button span {
+      width: 5px;
+      height: 5px;
+      background-color: #4caf50;
+      border-radius: 50%;
+    }
+    .menu-content {
+      display: none;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      background: white;
+      border: 1.5px solid #a3d4a5;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(27, 94, 32, 0.2);
+      min-width: 120px;
+      overflow: hidden;
+      z-index: 100;
+    }
+    .menu-content.show {
+      display: block;
+    }
+    .menu-content button {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 12px 15px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 600;
+      color: #2e4d2e;
+      transition: background-color 0.25s ease;
+    }
+    .menu-content button:hover {
+      background-color: #4caf50;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <button id="delete-btn">Delete Update</button>
   <div class="container">
-    <h1 id="update-title">Tajuk Update</h1>
-    <p id="update-content">Isi update...</p>
-    <div id="media-container" class="media-container"></div>
+    <div class="menu-wrapper">
+      <button class="menu-button" aria-label="Options">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="menu-content" id="menuContent">
+        <button id="editBtn">Edit</button>
+        <button id="deleteBtn">Delete</button>
+      </div>
+    </div>
+
+    <h1 id="updateTitle">Tajuk Update</h1>
+    <p id="updateContent">Isi update akan dipaparkan di sini.</p>
+
     <button id="back-btn">Kembali</button>
   </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-  import { getStorage, ref, deleteObject } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
+  <!-- Include MD5 hashing library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
-    authDomain: "latenight-4c61a.firebaseapp.com",
-    projectId: "latenight-4c61a",
-    storageBucket: "latenight-4c61a.firebasestorage.app",
-    messagingSenderId: "208698993180",
-    appId: "1:208698993180:web:7741767d129b4d43034dd9",
-    measurementId: "G-MVKZ0R87Y3"
-  };
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
+      authDomain: "latenight-4c61a.firebaseapp.com",
+      projectId: "latenight-4c61a",
+      storageBucket: "latenight-4c61a.appspot.com",
+      messagingSenderId: "208698993180",
+      appId: "1:208698993180:web:7741767d129b4d43034dd9",
+      measurementId: "G-MVKZ0R87Y3"
+    };
 
-  const id=new URLSearchParams(window.location.search).get("id");
-  let currentUpdate=null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  async function loadUpdate(){
-    const snap=await getDoc(doc(db,"updates",id));
-    if(snap.exists()){
-      currentUpdate=snap.data();
-      document.getElementById("update-title").textContent=currentUpdate.tajuk;
-      document.getElementById("update-content").textContent=currentUpdate.isi;
+    const params = new URLSearchParams(window.location.search);
+    const updateId = params.get("id");
 
-      const mediaContainer=document.getElementById("media-container");
-      mediaContainer.innerHTML="";
-      if(currentUpdate.media){
-        currentUpdate.media.forEach(m=>{
-          if(m.type==="image"){
-            const img=document.createElement("img");
-            img.src=m.url;
-            mediaContainer.appendChild(img);
-          }else{
-            const video=document.createElement("video");
-            video.src=m.url;video.controls=true;
-            mediaContainer.appendChild(video);
-          }
-        });
+    const userId = localStorage.getItem("userId"); // Current user id from localStorage
+    let penulisId = null;
+
+    const updateTitle = document.getElementById("updateTitle");
+    const updateContent = document.getElementById("updateContent");
+    const backBtn = document.getElementById("back-btn");
+    const menuButton = document.querySelector(".menu-button");
+    const menuContent = document.getElementById("menuContent");
+    const editBtn = document.getElementById("editBtn");
+    const deleteBtn = document.getElementById("deleteBtn");
+
+    // Admin password hash (md5)
+    const adminPassHash = "f019d5e0a9a5a9e17f0145a40975a7d1"; // md5('maradmindelete')
+
+    // Load update details and penulisId
+    async function loadUpdate() {
+      if (!updateId) {
+        alert("Update tidak dijumpai.");
+        window.location.href = "index.html";
+        return;
       }
-    }else{
-      alert("Update tidak ditemui.");
-      window.location.href="index.html";
+
+      try {
+        const docRef = doc(db, "updates", updateId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          updateTitle.textContent = data.tajuk;
+          updateContent.textContent = data.isi;
+          penulisId = data.penulisId;
+
+          // If user is not the author, hide edit button
+          if (penulisId !== userId) {
+            editBtn.style.display = "none";
+          }
+        } else {
+          alert("Update tidak dijumpai.");
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        console.error("Gagal dapat data update:", error);
+        alert("Gagal memuatkan update. Sila cuba lagi.");
+        window.location.href = "index.html";
+      }
     }
-  }
-  loadUpdate();
 
-  document.getElementById("back-btn").onclick=()=>window.location.href="index.html";
+    await loadUpdate();
 
-  document.getElementById("delete-btn").onclick=async()=>{
-    if(!confirm("Padam update ini?")) return;
-    if(currentUpdate && currentUpdate.media){
-      for(const m of currentUpdate.media){
-        try{
-          // ambil nama file dari URL storage
-          const urlPath=new URL(m.url).pathname;
-          const fullPath=decodeURIComponent(urlPath.split("/o/")[1].split("?")[0]);
-          await deleteObject(ref(storage,fullPath));
-          console.log("Media dipadam:",fullPath);
-        }catch(err){
-          console.error("Gagal padam media:",err);
+    backBtn.onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    // Toggle menu visibility
+    menuButton.onclick = () => {
+      menuContent.classList.toggle("show");
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!menuButton.contains(e.target) && !menuContent.contains(e.target)) {
+        menuContent.classList.remove("show");
+      }
+    });
+
+    editBtn.onclick = () => {
+      if (penulisId === userId) {
+        window.location.href = `create.html?id=${updateId}&edit=true`;
+      }
+    };
+
+    deleteBtn.onclick = async () => {
+      const docRef = doc(db, "updates", updateId);
+
+      if (penulisId === userId) {
+        // Penulis delete terus tanpa password
+        const confirmDelete = confirm("Anda pasti mahu padam update ini?");
+        if (confirmDelete) {
+          try {
+            await deleteDoc(docRef);
+            alert("Update berjaya dipadam.");
+            window.location.href = "index.html";
+          } catch (error) {
+            console.error("Gagal memadam update:", error);
+            alert("Gagal memadam update. Sila cuba lagi.");
+          }
+        }
+      } else {
+        // Bukan penulis, kena masukkan password admin
+        const input = prompt("Masukkan kata laluan admin untuk padam update ini:");
+        if (input === null) return; // batal prompt
+
+        const enteredHash = md5(input);
+        if (enteredHash === adminPassHash) {
+          try {
+            await deleteDoc(docRef);
+            alert("Update berjaya dipadam oleh admin.");
+            window.location.href = "index.html";
+          } catch (error) {
+            console.error("Gagal memadam update:", error);
+            alert("Gagal memadam update. Sila cuba lagi.");
+          }
+        } else {
+          alert("Kata laluan admin salah!");
         }
       }
-    }
-    await deleteDoc(doc(db,"updates",id));
-    alert("Update + semua media telah dipadam.");
-    window.location.href="index.html";
-  }
-</script>
+    };
+  </script>
 </body>
 </html>
