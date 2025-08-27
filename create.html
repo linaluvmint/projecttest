@@ -1,74 +1,302 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Buat Update Baru</title>
-<style>
-  body{margin:0;padding:20px;font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(to bottom right,#c8e6c9,#e8f5e9);min-height:100vh;display:flex;justify-content:center;}
-  .container{background:#fff;max-width:650px;width:100%;border-radius:20px;padding:30px;box-shadow:0 20px 40px rgba(56,142,60,.35);position:relative;}
-  h1{text-align:center;}
-  label{font-weight:700;display:block;margin:10px 0 5px;}
-  input,textarea{width:100%;padding:12px;border:2px solid #a5d6a7;border-radius:14px;margin-bottom:15px;}
-  textarea{min-height:140px;}
-  input[type=color]{width:70px;height:40px;border:none;}
-  button{background:#1b5e20;color:#fff;font-weight:700;border:none;padding:14px 28px;border-radius:16px;cursor:pointer;display:block;margin:auto;}
-  #back-button{position:absolute;top:20px;left:20px;background:#388e3c;padding:10px 18px;border-radius:12px;color:white;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Buat Update Baru</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet" />
+  <style>
+    @keyframes greenPulse {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, #d7f5d1, #a3d7a5, #d7f5d1, #a3d7a5);
+      background-size: 400% 400%;
+      animation: greenPulse 20s ease infinite;
+      color: #2e4d2e;
+    }
+    .container {
+      background: linear-gradient(145deg, #f0fff0, #d8f5d8);
+      border-radius: 25px;
+      padding: 40px 50px;
+      box-shadow: 0 8px 24px rgba(27, 94, 32, 0.15), inset 0 0 8px rgba(255, 255, 255, 0.6);
+      border: 1.5px solid #a3d4a5;
+      max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    h1 {
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+      color: #2e4d2e;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      text-align: center;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: #2e4d2e;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1.8px solid #a3d4a5;
+      font-size: 1rem;
+      font-family: 'Nunito', sans-serif;
+      color: #1e293b;
+      resize: vertical;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #4caf50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.7);
+    }
+    textarea {
+      min-height: 130px;
+    }
+    button {
+      background: #4caf50;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: none;
+      padding: 14px 0;
+      width: 100%;
+      border-radius: 18px;
+      cursor: pointer;
+      margin-top: 25px;
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      background: #388e3c;
+      box-shadow: 0 8px 20px rgba(56, 142, 60, 0.6);
+    }
+    #back-button {
+      background: transparent;
+      color: #4caf50;
+      border: 2px solid #4caf50;
+      padding: 10px 25px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 20px;
+      display: inline-block;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #back-button:hover {
+      background-color: #4caf50;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <button id="back-button">Kembali</button>
-  <h1>Buat Update Baru</h1>
-  <form id="updateForm">
-    <label for="tajuk">Tajuk</label><input id="tajuk" required>
-    <label for="isi">Isi</label><textarea id="isi" required></textarea>
-    <label for="media">Upload Media (gambar/video, max 3)</label><input type="file" id="media" multiple accept="image/*,video/*">
-    <label for="themeColor">Warna Tema</label><input type="color" id="themeColor" value="#1b5e20">
-    <button type="submit">Hantar</button>
-  </form>
-</div>
+  <div class="container">
+    <button id="back-button">Kembali</button>
+    <h1 id="formTitle">Buat Update Baru</h1>
+    <form id="updateForm">
+      <label for="tajuk">Tajuk</label>
+      <input id="tajuk" type="text" required placeholder="Contoh: Hari yang menyeronokkan" />
+      <label for="isi">Isi</label>
+      <textarea id="isi" required placeholder="Ceritakan apa yang berlaku hari ini..."></textarea>
+      <button type="submit" id="submitButton">Hantar</button>
+    </form>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      doc,
+      getDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import {
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
-    authDomain: "latenight-4c61a.firebaseapp.com",
-    projectId: "latenight-4c61a",
-    storageBucket: "latenight-4c61a.firebasestorage.app",
-    messagingSenderId: "208698993180",
-    appId: "1:208698993180:web:7741767d129b4d43034dd9",
-    measurementId: "G-MVKZ0R87Y3"
-  };
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
+      authDomain: "latenight-4c61a.firebaseapp.com",
+      projectId: "latenight-4c61a",
+      storageBucket: "latenight-4c61a.appspot.com",
+      messagingSenderId: "208698993180",
+      appId: "1:208698993180:web:7741767d129b4d43034dd9",
+      measurementId: "G-MVKZ0R87Y3"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  document.getElementById("back-button").onclick=()=>window.location.href="index.html";
+    // Params from URL
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get("edit") === "true";
+    const updateId = params.get("id");
 
-  document.getElementById("updateForm").addEventListener("submit", async(e)=>{
-    e.preventDefault();
-    const tajuk=document.getElementById("tajuk").value.trim();
-    const isi=document.getElementById("isi").value.trim();
-    const themeColor=document.getElementById("themeColor").value;
-    const files=Array.from(document.getElementById("media").files).slice(0,3);
+    // DOM elements
+    const tajukEl = document.getElementById("tajuk");
+    const isiEl = document.getElementById("isi");
+    const formTitle = document.getElementById("formTitle");
+    const submitButton = document.getElementById("submitButton");
+    const backButton = document.getElementById("back-button");
 
-    const mediaUrls=[];
-    for(const file of files){
-      const fileRef=ref(storage,`updates/${Date.now()}-${file.name}`);
-      await uploadBytes(fileRef,file);
-      const url=await getDownloadURL(fileRef);
-      mediaUrls.push({type:file.type.startsWith("video")?"video":"image",url});
+    // Current user
+    let currentUser = null;
+
+    // Sign in anonymously and get user
+    async function initAuth() {
+      return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            currentUser = user;
+            resolve(user);
+          } else {
+            try {
+              const anonUser = await signInAnonymously(auth);
+              currentUser = anonUser.user;
+              resolve(currentUser);
+            } catch (err) {
+              reject(err);
+            }
+          }
+        });
+      });
     }
 
-    await addDoc(collection(db,"updates"),{tajuk,isi,themeColor,media:mediaUrls,createdAt:serverTimestamp()});
-    alert("Update berjaya disimpan!");
-    window.location.href="index.html";
-  });
-</script>
+    // Load data for editing
+    async function loadUpdateData() {
+      if (!updateId) return;
+
+      try {
+        const docRef = doc(db, "updates", updateId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          alert("Update tidak dijumpai.");
+          window.location.href = "index.html";
+          return;
+        }
+
+        const data = docSnap.data();
+
+        // Check if current user is owner, else disallow edit
+        if (data.penulisId !== currentUser.uid) {
+          alert("Anda tidak dibenarkan edit update ini.");
+          window.location.href = "index.html";
+          return;
+        }
+
+        tajukEl.value = data.tajuk || "";
+        isiEl.value = data.isi || "";
+      } catch (err) {
+        console.error("Gagal ambil data:", err);
+        alert("Ralat semasa memuatkan update.");
+        window.location.href = "index.html";
+      }
+    }
+
+    // Init function
+    async function init() {
+      try {
+        await initAuth();
+
+        if (isEdit && updateId) {
+          formTitle.textContent = "Edit Update";
+          submitButton.textContent = "Simpan Perubahan";
+          await loadUpdateData();
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+        alert("Gagal mengesahkan pengguna. Sila cuba lagi.");
+      }
+    }
+
+    // Form submit
+    document.getElementById("updateForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const tajuk = tajukEl.value.trim();
+      const isi = isiEl.value.trim();
+
+      if (!tajuk || !isi) {
+        alert("Sila isi semua ruangan.");
+        return;
+      }
+
+      if (!currentUser) {
+        alert("Pengguna belum disahkan. Sila muat semula halaman.");
+        return;
+      }
+
+      try {
+        if (isEdit && updateId) {
+          const docRef = doc(db, "updates", updateId);
+
+          // Check again owner
+          const docSnap = await getDoc(docRef);
+          if (!docSnap.exists()) {
+            alert("Update tidak dijumpai.");
+            return;
+          }
+          const data = docSnap.data();
+
+          if (data.penulisId !== currentUser.uid) {
+            alert("Anda tidak dibenarkan edit update ini.");
+            return;
+          }
+
+          await updateDoc(docRef, {
+            tajuk,
+            isi
+          });
+          alert("Update berjaya dikemaskini.");
+        } else {
+          await addDoc(collection(db, "updates"), {
+            tajuk,
+            isi,
+            penulisId: currentUser.uid,
+            createdAt: serverTimestamp()
+          });
+          alert("Update berjaya disimpan.");
+        }
+
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error("Gagal simpan:", err);
+        alert("Gagal simpan update.");
+      }
+    });
+
+    // Back button
+    backButton.onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    // Jalankan init bila load page
+    init();
+  </script>
 </body>
 </html>
