@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Buat Update Baru</title>
+  <title>Buat Update Baru / Kemaskini Update</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet" />
   <style>
     @keyframes greenPulse {
@@ -27,7 +27,9 @@
       background: linear-gradient(145deg, #f0fff0, #d8f5d8);
       border-radius: 25px;
       padding: 40px 50px;
-      box-shadow: 0 8px 24px rgba(27, 94, 32, 0.15), inset 0 0 8px rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 8px 24px rgba(27, 94, 32, 0.15),
+        inset 0 0 8px rgba(255, 255, 255, 0.6);
       border: 1.5px solid #a3d4a5;
       max-width: 600px;
       width: 100%;
@@ -109,34 +111,20 @@
 <body>
   <div class="container">
     <button id="back-button">Kembali</button>
-    <h1 id="formTitle">Buat Update Baru</h1>
+    <h1 id="page-title">Buat Update Baru</h1>
     <form id="updateForm">
       <label for="tajuk">Tajuk</label>
-      <input id="tajuk" type="text" required placeholder="Contoh: Hari yang menyeronokkan" />
+      <input id="tajuk" type="text" required placeholder="Contoh: Hari yang menyeronokkan" autocomplete="off" />
       <label for="isi">Isi</label>
       <textarea id="isi" required placeholder="Ceritakan apa yang berlaku hari ini..."></textarea>
-      <button type="submit" id="submitButton">Hantar</button>
+      <button type="submit">Hantar</button>
     </form>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      doc,
-      getDoc,
-      updateDoc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import {
-      getAuth,
-      signInAnonymously,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD5kksl475n1Blo9tjP9KVMSrebO8AFJxc",
       authDomain: "latenight-4c61a.firebaseapp.com",
@@ -149,154 +137,85 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    // Params from URL
     const params = new URLSearchParams(window.location.search);
-    const isEdit = params.get("edit") === "true";
     const updateId = params.get("id");
+    const isEdit = params.get("edit") === "true";
 
-    // DOM elements
-    const tajukEl = document.getElementById("tajuk");
-    const isiEl = document.getElementById("isi");
-    const formTitle = document.getElementById("formTitle");
-    const submitButton = document.getElementById("submitButton");
-    const backButton = document.getElementById("back-button");
+    const tajukInput = document.getElementById("tajuk");
+    const isiInput = document.getElementById("isi");
+    const form = document.getElementById("updateForm");
+    const backBtn = document.getElementById("back-button");
+    const pageTitle = document.getElementById("page-title");
+    const submitBtn = form.querySelector("button[type='submit']");
 
-    // Current user
-    let currentUser = null;
-
-    // Sign in anonymously and get user
-    async function initAuth() {
-      return new Promise((resolve, reject) => {
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            currentUser = user;
-            resolve(user);
-          } else {
-            try {
-              const anonUser = await signInAnonymously(auth);
-              currentUser = anonUser.user;
-              resolve(currentUser);
-            } catch (err) {
-              reject(err);
-            }
-          }
-        });
-      });
-    }
-
-    // Load data for editing
-    async function loadUpdateData() {
-      if (!updateId) return;
-
-      try {
-        const docRef = doc(db, "updates", updateId);
-        const docSnap = await getDoc(docRef);
-
-        if (!docSnap.exists()) {
-          alert("Update tidak dijumpai.");
-          window.location.href = "index.html";
-          return;
-        }
-
-        const data = docSnap.data();
-
-        // Check if current user is owner, else disallow edit
-        if (data.penulisId !== currentUser.uid) {
-          alert("Anda tidak dibenarkan edit update ini.");
-          window.location.href = "index.html";
-          return;
-        }
-
-        tajukEl.value = data.tajuk || "";
-        isiEl.value = data.isi || "";
-      } catch (err) {
-        console.error("Gagal ambil data:", err);
-        alert("Ralat semasa memuatkan update.");
-        window.location.href = "index.html";
-      }
-    }
-
-    // Init function
-    async function init() {
-      try {
-        await initAuth();
-
-        if (isEdit && updateId) {
-          formTitle.textContent = "Edit Update";
-          submitButton.textContent = "Simpan Perubahan";
-          await loadUpdateData();
-        }
-      } catch (err) {
-        console.error("Auth error:", err);
-        alert("Gagal mengesahkan pengguna. Sila cuba lagi.");
-      }
-    }
-
-    // Form submit
-    document.getElementById("updateForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const tajuk = tajukEl.value.trim();
-      const isi = isiEl.value.trim();
-
-      if (!tajuk || !isi) {
-        alert("Sila isi semua ruangan.");
-        return;
-      }
-
-      if (!currentUser) {
-        alert("Pengguna belum disahkan. Sila muat semula halaman.");
-        return;
-      }
-
-      try {
-        if (isEdit && updateId) {
-          const docRef = doc(db, "updates", updateId);
-
-          // Check again owner
-          const docSnap = await getDoc(docRef);
-          if (!docSnap.exists()) {
-            alert("Update tidak dijumpai.");
-            return;
-          }
-          const data = docSnap.data();
-
-          if (data.penulisId !== currentUser.uid) {
-            alert("Anda tidak dibenarkan edit update ini.");
-            return;
-          }
-
-          await updateDoc(docRef, {
-            tajuk,
-            isi
-          });
-          alert("Update berjaya dikemaskini.");
-        } else {
-          await addDoc(collection(db, "updates"), {
-            tajuk,
-            isi,
-            penulisId: currentUser.uid,
-            createdAt: serverTimestamp()
-          });
-          alert("Update berjaya disimpan.");
-        }
-
-        window.location.href = "index.html";
-      } catch (err) {
-        console.error("Gagal simpan:", err);
-        alert("Gagal simpan update.");
-      }
-    });
-
-    // Back button
-    backButton.onclick = () => {
+    backBtn.onclick = () => {
       window.location.href = "index.html";
     };
 
-    // Jalankan init bila load page
-    init();
+    // Jika dalam mode edit, fetch data sedia ada dan paparkan dalam form
+    if (isEdit && updateId) {
+      pageTitle.textContent = "Kemaskini Update";
+      submitBtn.textContent = "Kemaskini";
+
+      (async () => {
+        try {
+          const docRef = doc(db, "updates", updateId);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            tajukInput.value = data.tajuk || "";
+            isiInput.value = data.isi || "";
+          } else {
+            alert("Update tidak dijumpai.");
+            window.location.href = "index.html";
+          }
+        } catch (error) {
+          console.error("Gagal dapat data update:", error);
+          alert("Gagal memuatkan update. Sila cuba lagi.");
+          window.location.href = "index.html";
+        }
+      })();
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const tajuk = tajukInput.value.trim();
+      const isi = isiInput.value.trim();
+
+      if (!tajuk || !isi) {
+        alert("Sila isi semua ruangan dengan lengkap.");
+        return;
+      }
+
+      try {
+        if (isEdit && updateId) {
+          // Update dokumen sedia ada
+          const docRef = doc(db, "updates", updateId);
+          await updateDoc(docRef, {
+            tajuk,
+            isi,
+            updatedAt: serverTimestamp()
+          });
+          alert("Update berjaya dikemaskini!");
+        } else {
+          // Create dokumen baru
+          await addDoc(collection(db, "updates"), {
+            tajuk,
+            isi,
+            createdAt: serverTimestamp()
+          });
+          alert("Update berjaya disimpan!");
+        }
+
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error("Gagal hantar:", err);
+        alert("Gagal simpan update. Sila cuba lagi.");
+      }
+    });
   </script>
 </body>
 </html>
